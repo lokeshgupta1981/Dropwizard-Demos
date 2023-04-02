@@ -1,1 +1,1 @@
-# dropwizard-demos
+# Dropwizard Demos
