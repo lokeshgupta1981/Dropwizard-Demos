@@ -1,7 +1,11 @@
 package com.howtodoinjava.app.web;
 
+import com.howtodoinjava.app.auth.User;
 import com.howtodoinjava.app.model.Employee;
 import com.howtodoinjava.app.repository.EmployeeRepository;
+import io.dropwizard.auth.Auth;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import jakarta.ws.rs.DELETE;
@@ -32,13 +36,15 @@ public class EmployeeController {
   }
 
   @GET
-  public Response getEmployees() {
+  @PermitAll
+  public Response getEmployees(@Auth User user) {
     return Response.ok(repository.getEmployees()).build();
   }
 
   @GET
   @Path("/{id}")
-  public Response getEmployeeById(@PathParam("id") Integer id) {
+  @PermitAll
+  public Response getEmployeeById(@PathParam("id") Integer id, @Auth User user) {
     Employee employee = repository.getEmployee(id);
     if (employee != null) {
       return Response.ok(employee).build();
@@ -48,7 +54,8 @@ public class EmployeeController {
   }
 
   @POST
-  public Response createEmployee(Employee employee) throws URISyntaxException {
+  @RolesAllowed({"ADMIN"})
+  public Response createEmployee(Employee employee, @Auth User user) throws URISyntaxException {
     // validation
     Set<ConstraintViolation<Employee>> violations = validator.validate(employee);
     Employee e = repository.getEmployee(employee.getId());
@@ -71,7 +78,8 @@ public class EmployeeController {
 
   @PUT
   @Path("/{id}")
-  public Response updateEmployeeById(@PathParam("id") Integer id, Employee employee) {
+  @PermitAll
+  public Response updateEmployeeById(@PathParam("id") Integer id, Employee employee, @Auth User user) {
     // validation
     Set<ConstraintViolation<Employee>> violations = validator.validate(employee);
     Employee e = repository.getEmployee(employee.getId());
@@ -94,7 +102,8 @@ public class EmployeeController {
 
   @DELETE
   @Path("/{id}")
-  public Response removeEmployeeById(@PathParam("id") Integer id) {
+  @RolesAllowed({"ADMIN"})
+  public Response removeEmployeeById(@PathParam("id") Integer id, @Auth User user) {
     Employee employee = repository.getEmployee(id);
     if (employee != null) {
       repository.removeEmployee(id);
